@@ -1,0 +1,28 @@
+version: "3"
+
+services:
+  database:
+    image: "postgres:15.1-alpine"
+    restart: always
+    environment:
+      - POSTGRES_USER=possebles_usr
+      - POSTGRES_PASSWORD=pwd4possebles
+      - POSTGRES_DB=possebles
+    volumes:
+      - "./data/postgresql:/var/lib/postgresql/data"
+    ports:
+      - "5432:5432"
+  redis:
+    image: "redis:7.0.8-alpine"
+    restart: always
+    ports:
+      - "6379:6379"
+  flower:
+    image: "mher/flower:1.2"
+    ports:
+      - "5555:5555"
+    environment:
+      - CELERY_BROKER_URL=redis://redis
+      - CELERY_RESULT_BACKEND=redis://redis
+    depends_on:
+      - redis
