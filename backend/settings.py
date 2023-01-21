@@ -5,7 +5,7 @@ class AppSettings(BaseSettings):
 
     debug: bool = False
     redis_dsn: RedisDsn = 'redis://user:pass@localhost:6379/1'
-    pg_dsn: PostgresDsn = 'postgres://user:pass@localhost:5432/foobar'
+    pg_dsn: PostgresDsn = 'postgresql://user:pass@localhost:5432/foobar'
 
     class Config:
         env_prefix = "pbl_"
