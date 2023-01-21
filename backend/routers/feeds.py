@@ -1,4 +1,7 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, Depends
+from sqlalchemy.orm import Session
+from backend.database import crud
+from backend.dependencies import get_db
 import logging
 
 logger = logging.getLogger(__name__)
@@ -8,22 +11,24 @@ router = APIRouter(
     tags=["Feeds"]
 )
 
+@router.post("/")
+async def create_feed():
+    logger.info("Inserting new feed")
+    pass
+
 
 @router.get("/")
-async def get_feeds():
+async def read_feeds(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
     logger.info("Getting all feeds")
-    pass
+    feeds = crud.get_feeds(db, skip=skip, limit=limit)
+    return feeds
+
 
 @router.get("/{feed_id}")
 async def get_feed(feed_id: str):
     logger.info("Getting feed {}".format(feed_id))
     pass
 
-
-@router.post("/")
-async def new_feed():
-    logger.info("Inserting new feed")
-    pass
 
 @router.patch("/{feed_id}")
 async def update_feed(feed_id: str):

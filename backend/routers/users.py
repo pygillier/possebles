@@ -1,5 +1,5 @@
 from fastapi import APIRouter, HTTPException, Depends
-from ..database import crud,schemas
+from backend.database import crud, schemas
 from backend.dependencies import get_db
 from sqlalchemy.orm import Session
 
