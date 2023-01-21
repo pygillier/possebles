@@ -1,14 +1,16 @@
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 from backend.database import crud
-from backend.dependencies import get_db
+from backend.dependencies.db import get_db
 import logging
+from backend.dependencies import security
 
 logger = logging.getLogger(__name__)
 
 router = APIRouter(
     prefix="/feeds",
-    tags=["Feeds"]
+    tags=["Feeds"],
+    dependencies=[Depends(security.oauth2_scheme)]
 )
 
 @router.post("/")

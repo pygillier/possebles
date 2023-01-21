@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 from .logging import CustomizeLogger
-from .routers import feeds, users
+from .routers import feeds, users, auth
 from .settings import app_settings
 from .database import models, engine
 
@@ -18,6 +18,7 @@ def create_app():
     _app.logger.info("Database mapped")
 
     # Routers
+    _app.include_router(auth.router)
     _app.include_router(users.router)
     _app.include_router(feeds.router)
     _app.logger.info("Routers loaded.")
