@@ -28,7 +28,6 @@ async def new_feed():
 @router.patch("/{feed_id}")
 async def update_feed(feed_id: str):
     logger.info("Updating feed {}".format(feed_id))
-    pass
 
 
 @router.delete("/{feed_id}")
