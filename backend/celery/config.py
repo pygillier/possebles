@@ -10,8 +10,10 @@ def route_task(name, args, kwargs, options, task=None, **kw):
 
 
 class CeleryConfig:
-    CELERY_BROKER_URL = app_settings.redis_dsn
-    CELERY_RESULT_BACKEND = "rpc://"
+    broker_url = app_settings.redis_dsn
+    result_backend = "rpc://"
+
+    worker_hijack_root_logger = False
 
     CELERY_TASK_QUEUES: list = (
         # default queue
@@ -22,5 +24,6 @@ class CeleryConfig:
     )
 
     CELERY_TASK_ROUTES = (route_task,)
+
 
 config = CeleryConfig()

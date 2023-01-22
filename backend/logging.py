@@ -87,6 +87,7 @@ class CustomizeLogger:
         for _log in ['uvicorn',
                      'uvicorn.error',
                      'fastapi'
+                     'celery'
                      ]:
             _logger = logging.getLogger(_log)
             _logger.handlers = [InterceptHandler()]
