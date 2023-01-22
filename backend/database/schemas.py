@@ -11,6 +11,11 @@ class FeedCreate(FeedBase):
     pass
 
 
+class FeedImport(BaseModel):
+    """Schema for import from URL only"""
+    url: str
+
+
 class Feed(FeedBase):
     id: int
     owner_id: int
@@ -44,3 +49,8 @@ class Token(BaseModel):
 
 class TokenData(BaseModel):
     username: str | None = None
+
+
+class Task(BaseModel):
+    """Schema for celery tasks"""
+    task_id: str
