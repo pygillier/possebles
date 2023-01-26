@@ -1,4 +1,7 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
+from fastapi.responses import JSONResponse
+
+import backend.exception
 from .logging import CustomizeLogger
 from .routers import feeds, users, auth
 from .settings import app_settings
@@ -12,7 +15,9 @@ def create_app():
         title='POSSEbles',
         description="Publish your content to other platforms, yourself",
         version=app_settings.app_version,
-        debug=app_settings.debug)
+        debug=app_settings.debug,
+        redoc_url=None)
+
     logger = CustomizeLogger.make_logger()
     _app.logger = logger
 
@@ -37,3 +42,12 @@ def create_app():
 
 app = create_app()
 celery = app.celery_app
+
+
+# Exception handlers
+@app.exception_handler(backend.exception.FeedException)
+async def feed_exception_handler(req: Request, exc: backend.exception.FeedException):
+    return JSONResponse(
+        status_code=exc.code,
+        content={"message": exc.message, "url": exc.url},
+    )

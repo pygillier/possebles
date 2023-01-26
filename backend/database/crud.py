@@ -26,15 +26,3 @@ def create_user(db: Session, user: schemas.UserCreate):
     db.commit()
     db.refresh(db_user)
     return db_user
-
-
-def get_feeds(db: Session, skip: int = 0, limit: int = 100):
-    return db.query(models.Feed).offset(skip).limit(limit).all()
-
-
-def create_user_feed(db: Session, feed: schemas.FeedCreate, user_id: int):
-    db_feed = models.Feed(**feed.dict(), owner_id=user_id)
-    db.add(db_feed)
-    db.commit()
-    db.refresh(db_feed)
-    return db_feed

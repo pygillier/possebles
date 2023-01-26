@@ -7,7 +7,10 @@ from backend.dependencies import db
 from backend.settings import app_settings
 from datetime import datetime, timedelta
 from jose import JWTError, jwt
-from loguru import logger
+import logging
+
+
+logger = logging.getLogger(__name__)
 
 
 oauth2_scheme = OAuth2PasswordBearer(
@@ -43,7 +46,7 @@ def create_access_token(data: dict, expires_delta: timedelta | None = None):
     else:
         expire = datetime.utcnow() + timedelta(minutes=15)
 
-    logger.info("Expires: {}", expire)
+    logger.info("Expires: %s" % expire)
 
     to_encode.update({"exp": expire})
     encoded_jwt = jwt.encode(
