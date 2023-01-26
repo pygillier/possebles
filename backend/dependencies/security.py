@@ -1,9 +1,8 @@
 from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
-from sqlalchemy.orm import Session
 from passlib.context import CryptContext
-from backend.database import crud, models, schemas
-from backend.dependencies import db
+from backend.services.users import UserService
+from backend.database import models, schemas
 from backend.settings import app_settings
 from datetime import datetime, timedelta
 from jose import JWTError, jwt
@@ -21,17 +20,17 @@ oauth2_scheme = OAuth2PasswordBearer(
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 
-def verify_password(plain_password, hashed_password):
+def verify_password(plain_password, hashed_password) -> bool:
     return pwd_context.verify(plain_password, hashed_password)
 
 
-def get_password_hash(password):
+def get_password_hash(password) -> str:
     return pwd_context.hash(password)
 
 
-def authenticate_user(sess: Session, username: str, password: str) -> models.User | bool:
+def authenticate_user(username: str, password: str, svc: UserService = Depends()) -> models.User | False:
     """Authenticates the user against database & password"""
-    user = crud.get_user_by_email(sess, email=username)
+    user = svc.get_user_by_email(email=username)
     if user is None:
         return False
     if not verify_password(password, user.hashed_password):
@@ -58,7 +57,7 @@ def create_access_token(data: dict, expires_delta: timedelta | None = None):
     return encoded_jwt
 
 
-async def get_current_user(token: str = Depends(oauth2_scheme), sess: Session= Depends(db.get_db)) -> models.User:
+async def get_current_user(token: str = Depends(oauth2_scheme), svc: UserService = Depends()) -> models.User:
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
         detail="Could not validate credentials",
@@ -72,7 +71,7 @@ async def get_current_user(token: str = Depends(oauth2_scheme), sess: Session= D
         token_data = schemas.TokenData(username=username)
     except JWTError:
         raise credentials_exception
-    user = crud.get_user_by_email(sess, email=token_data.username)
+    user = svc.get_user_by_email(email=token_data.username)
     if user is None:
         raise credentials_exception
     return user
