@@ -1,3 +1,5 @@
+import datetime
+
 from pydantic import BaseModel
 
 
@@ -19,6 +21,9 @@ class FeedImport(BaseModel):
 class Feed(FeedBase):
     id: int
     owner_id: int
+    checked_at: datetime.datetime | None
+    created_at: datetime.datetime
+    updated_at: datetime.datetime | None
 
     class Config:
         orm_mode = True

@@ -1,7 +1,8 @@
 import logging
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, HTTPException
 from fastapi.responses import JSONResponse
 from backend.database import schemas
+from backend.settings import app_settings
 from backend.services.feeds import FeedService
 from backend.dependencies import security
 
@@ -37,13 +38,25 @@ async def import_feed(
     return _feed
 
 
+##### TESTING ####
+@router.get("/publish")
+async def check_feeds(
+        svc: FeedService = Depends()
+):
+    if app_settings.debug is False:
+        raise HTTPException(
+            status_code=403,
+        )
+
+    svc.publish()
+
+
 @router.get("/{feed_id}", response_model=schemas.Feed)
 async def get_feed(
         feed_id: int,
-        svc: FeedService = Depends(FeedService)
+        svc: FeedService = Depends()
 ):
     return svc.get_feed(feed_id=feed_id)
-
 
 
 @router.patch("/{feed_id}")
@@ -64,3 +77,5 @@ async def delete_feed(
         status_code=204,
         content={"message": "Feed deleted"},
     )
+
+

@@ -28,7 +28,7 @@ def get_password_hash(password) -> str:
     return pwd_context.hash(password)
 
 
-def authenticate_user(username: str, password: str, svc: UserService = Depends()) -> models.User | False:
+def authenticate_user(svc: UserService, username: str, password: str) -> models.User | bool:
     """Authenticates the user against database & password"""
     user = svc.get_user_by_email(email=username)
     if user is None:

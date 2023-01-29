@@ -1,9 +1,14 @@
 # Feed Service
+import datetime
+from time import mktime
+import pytz
+
 from fastapi import Depends
 from sqlalchemy.orm import Session
 from backend.database import models, schemas
 from backend.dependencies import db
 from backend.exception import FeedException
+from .mastodon import MastodonService
 import feedparser
 import logging
 
@@ -53,6 +58,56 @@ class FeedService:
                 message="This URL doesn't seem to be a valid RSS/Atom feed. Please check."
             )
 
-    def delete_feed(self, feed_id: int, owner: schemas.User):
-        if self.get_feed(feed_id=feed_id) is None:
+    def delete_feed(self, feed_id: int, owner: schemas.User) -> bool:
+        feed = self.get_feed(feed_id=feed_id)
+        if feed is None:
             raise FeedException(code=404, message="Unknown feed", url="")
+        else:
+            if feed.owner_id != owner.id:
+                raise FeedException(code=403, message="This feed doesn't belong to this user", url=feed.url)
+            else:
+                self._sess.delete(feed)
+                self._sess.commit()
+                return True
+
+    def publish(self, since_override: datetime.datetime = None):
+
+        mastodon = MastodonService()
+
+        feeds = self.get_feeds()
+        for feed in feeds:
+            if feed.checked_at is None and since_override is None:
+                logger.warning(f"Checking feed {feed.url} from the beginning as checked_at is null")
+                since = datetime.datetime(year=1980, month=4, day=29, hour=0, minute=0)
+            elif since_override is not None:
+                since = since_override
+            else:
+                logger.info(f"Checking new items on feed {feed.url} since {feed.checked_at}")
+                since = feed.checked_at
+
+            logger.info("Fetching items from remote URL")
+            content = feedparser.parse(feed.url)
+
+
+
+            if "entries" in content and len(content.entries) > 0:
+                to_publish = []
+                for entry in content.entries:
+                    entry_pub_date = datetime.datetime.fromtimestamp(mktime(entry.published_parsed), tz=pytz.UTC)
+                    if entry_pub_date > since:
+                        logger.info(f"Post '{entry.title}' published on {entry_pub_date} marked")
+                        to_publish.append(entry)
+
+                # Entries are chronological, reverse the list then publish it
+                to_publish.reverse()
+                mastodon.publish(to_publish)
+
+                logger.info(f"{len(to_publish)} entries published.")
+            else:
+                logger.error("No entries in feed.")
+
+            # Update the feed checked datetime
+            feed.checked_at = datetime.datetime.now(tz=pytz.UTC)
+            self._sess.commit()
+
+

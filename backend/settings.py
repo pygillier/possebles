@@ -1,4 +1,4 @@
-from pydantic import (BaseSettings, RedisDsn, PostgresDsn, Field)
+from pydantic import (BaseSettings, RedisDsn, PostgresDsn, HttpUrl)
 
 
 class AppSettings(BaseSettings):
@@ -12,7 +12,11 @@ class AppSettings(BaseSettings):
     token_expire_minutes: int = 30
     token_algorithm: str = "HS256"
 
-    # Celery
+    # Mastodon
+    mastodon_client_key: str
+    mastodon_client_secret: str
+    mastodon_access_token: str
+    mastodon_api_url: HttpUrl
 
 
     class Config:
